@@ -1,0 +1,62 @@
+<!-- Clients Header -->
+<div class="mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Kunden</h1>
+      <p class="text-gray-400">Verwalte deine Kundendaten und Kontakte</p>
+    </div>
+    <button class="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white transition-colors self-start">
+      + Neuer Kunde
+    </button>
+  </div>
+</div>
+
+<!-- Clients Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  @for (client of clients; track client.id) {
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:bg-gray-800/50 transition-colors">
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <span class="text-white font-bold">{{ client.initials }}</span>
+          </div>
+          <div>
+            <h3 class="font-semibold text-white">{{ client.name }}</h3>
+            <p class="text-sm text-gray-400">{{ client.contact }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2 mb-4">
+        <div class="flex items-center text-sm">
+          <span class="text-gray-500 mr-2">📧</span>
+          <span class="text-gray-400">{{ client.email }}</span>
+        </div>
+        <div class="flex items-center text-sm">
+          <span class="text-gray-500 mr-2">📱</span>
+          <span class="text-gray-400">{{ client.phone }}</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Projekte</div>
+          <div class="text-lg font-bold text-white">{{ client.projectCount }}</div>
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Umsatz</div>
+          <div class="text-lg font-bold text-emerald-400">€{{ client.revenue | number:'1.0-0' }}</div>
+        </div>
+      </div>
+
+      <div class="flex space-x-2">
+        <button class="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-gray-300 text-sm transition-colors">
+          Bearbeiten
+        </button>
+        <button class="flex-1 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm transition-colors">
+          Projekt +
+        </button>
+      </div>
+    </div>
+  }
+</div>
