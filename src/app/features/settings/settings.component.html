@@ -1,0 +1,397 @@
+<!-- Settings Header -->
+<div class="mb-8">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Einstellungen</h1>
+      <p class="text-gray-400">Konfiguriere deine Firmen- und Rechnungsdaten</p>
+    </div>
+    <div class="flex items-center gap-3 mt-4 sm:mt-0">
+      @if (!isEditing()) {
+        <button 
+          (click)="loadSampleData()"
+          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+        >
+          📋 Beispieldaten
+        </button>
+        <button 
+          (click)="startEditing()"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+        >
+          ✏️ Bearbeiten
+        </button>
+      } @else {
+        <button 
+          (click)="cancelEditing()"
+          class="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+        >
+          Abbrechen
+        </button>
+        <button 
+          (click)="saveSettings()"
+          [disabled]="!hasChanges()"
+          class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+        >
+          💾 Speichern
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Setup Status -->
+  <div class="mb-6">
+    @if (isSetupComplete()) {
+      <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">✅</span>
+          <div>
+            <h3 class="text-green-400 font-semibold">Setup vollständig</h3>
+            <p class="text-green-300 text-sm">Alle Firmeneinstellungen sind konfiguriert. Sie können rechtssichere Rechnungen erstellen.</p>
+          </div>
+          <button 
+            (click)="createTestInvoice()"
+            class="ml-auto bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition-colors"
+          >
+            Test-Rechnung
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl">⚠️</span>
+          <div class="flex-1">
+            <h3 class="text-yellow-400 font-semibold mb-2">Setup unvollständig</h3>
+            <p class="text-yellow-300 text-sm mb-3">Folgende Pflichtangaben fehlen noch:</p>
+            <ul class="text-yellow-300 text-sm space-y-1">
+              @for (error of getValidationErrors(); track error) {
+                <li class="flex items-center gap-2">
+                  <span class="w-1 h-1 bg-yellow-400 rounded-full"></span>
+                  {{ error }}
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="flex flex-wrap gap-2 mb-8 border-b border-gray-800 pb-4">
+  <button 
+    (click)="setActiveTab('company')"
+    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    [class]="activeTab() === 'company' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+  >
+    🏢 Firmendaten
+  </button>
+  <button 
+    (click)="setActiveTab('tax')"
+    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    [class]="activeTab() === 'tax' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+  >
+    📊 Steuerdaten
+  </button>
+  <button 
+    (click)="setActiveTab('banking')"
+    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    [class]="activeTab() === 'banking' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+  >
+    🏦 Bankdaten
+  </button>
+  <button 
+    (click)="setActiveTab('invoice')"
+    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    [class]="activeTab() === 'invoice' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+  >
+    📄 Rechnungen
+  </button>
+</div>
+
+<!-- Tab Content -->
+<div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+  
+  <!-- Firmendaten Tab -->
+  @if (activeTab() === 'company') {
+    <div class="space-y-6">
+      <h2 class="text-xl font-semibold text-white mb-4">Firmendaten</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Firmenname</label>
+          <input 
+            type="text" 
+            [(ngModel)]="settings().companyName"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+            placeholder="z.B. Max Mustermann Webentwicklung"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Inhaber</label>
+          <input 
+            type="text" 
+            [(ngModel)]="settings().ownerName"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+            placeholder="z.B. Max Mustermann"
+          >
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">Geschäftsadresse</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-400 mb-2">Straße</label>
+            <input 
+              type="text" 
+              [(ngModel)]="settings().address.street"
+              (ngModelChange)="onSettingsChange()"
+              [disabled]="!isEditing()"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+              placeholder="Musterstraße"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-2">Nr.</label>
+            <input 
+              type="text" 
+              [(ngModel)]="settings().address.houseNumber"
+              (ngModelChange)="onSettingsChange()"
+              [disabled]="!isEditing()"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+              placeholder="123"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-2">PLZ</label>
+            <input 
+              type="text" 
+              [(ngModel)]="settings().address.postalCode"
+              (ngModelChange)="onSettingsChange()"
+              [disabled]="!isEditing()"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+              placeholder="12345"
+            >
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-2">Stadt</label>
+            <input 
+              type="text" 
+              [(ngModel)]="settings().address.city"
+              (ngModelChange)="onSettingsChange()"
+              [disabled]="!isEditing()"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+              placeholder="Berlin"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-2">Land</label>
+            <input 
+              type="text" 
+              [(ngModel)]="settings().address.country"
+              [disabled]="!isEditing()"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+              value="Deutschland"
+            >
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">Kontaktdaten</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-2">E-Mail</label>
+            <input 
+              type="email" 
+              [(ngModel)]="settings().email"
+              (ngModelChange)="onSettingsChange()"
+              [disabled]="!isEditing()"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+              placeholder="kontakt@firma.de"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-2">Telefon</label>
+            <input 
+              type="tel" 
+              [(ngModel)]="settings().phone"
+              (ngModelChange)="onSettingsChange()"
+              [disabled]="!isEditing()"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+              placeholder="+49 30 12345678"
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Steuerdaten Tab -->
+  @if (activeTab() === 'tax') {
+    <div class="space-y-6">
+      <h2 class="text-xl font-semibold text-white mb-4">Steuerdaten</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Umsatzsteuer-ID</label>
+          <input 
+            type="text" 
+            [(ngModel)]="settings().vatId"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+            placeholder="DE123456789"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Steuernummer</label>
+          <input 
+            type="text" 
+            [(ngModel)]="settings().taxNumber"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+            placeholder="12/345/67890"
+          >
+        </div>
+      </div>
+
+      <div>
+        <div class="flex items-center gap-3">
+          <input 
+            type="checkbox" 
+            id="smallBusiness"
+            [(ngModel)]="settings().isSmallBusiness"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+          >
+          <label for="smallBusiness" class="text-blue-400 font-medium">
+            Kleinunternehmer nach §19 UStG
+          </label>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Bankdaten Tab -->
+  @if (activeTab() === 'banking') {
+    <div class="space-y-6">
+      <h2 class="text-xl font-semibold text-white mb-4">Bankverbindung</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Bankname</label>
+          <input 
+            type="text" 
+            [(ngModel)]="settings().bankName"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+            placeholder="Deutsche Bank"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">BIC</label>
+          <input 
+            type="text" 
+            [(ngModel)]="settings().bic"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+            placeholder="DEUTDEDB123"
+          >
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-400 mb-2">IBAN</label>
+        <input 
+          type="text" 
+          [(ngModel)]="settings().iban"
+          (ngModelChange)="onSettingsChange()"
+          [disabled]="!isEditing()"
+          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+          placeholder="DE89 1234 5678 9012 3456 78"
+        >
+      </div>
+    </div>
+  }
+
+  <!-- Rechnungseinstellungen Tab -->
+  @if (activeTab() === 'invoice') {
+    <div class="space-y-6">
+      <h2 class="text-xl font-semibold text-white mb-4">Rechnungseinstellungen</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Rechnungsprefix</label>
+          <input 
+            type="text" 
+            [(ngModel)]="settings().invoicePrefix"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+            placeholder="INV"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Nächste Nummer</label>
+          <input 
+            type="number" 
+            [(ngModel)]="settings().nextInvoiceNumber"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+            min="1"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-2">Zahlungsziel (Tage)</label>
+          <input 
+            type="number" 
+            [(ngModel)]="settings().defaultPaymentTerms"
+            (ngModelChange)="onSettingsChange()"
+            [disabled]="!isEditing()"
+            min="1"
+            max="60"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-blue-500"
+          >
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Actions Footer -->
+@if (isEditing() && hasChanges()) {
+  <div class="fixed bottom-4 right-4 bg-gray-900 border border-gray-800 rounded-lg p-4 shadow-2xl">
+    <div class="flex items-center gap-3">
+      <span class="text-yellow-400 text-sm">⚠️ Ungespeicherte Änderungen</span>
+      <button 
+        (click)="cancelEditing()"
+        class="px-3 py-1 text-gray-400 hover:text-white transition-colors text-sm"
+      >
+        Verwerfen
+      </button>
+      <button 
+        (click)="saveSettings()"
+        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm"
+      >
+        💾 Speichern
+      </button>
+    </div>
+  </div>
+}
