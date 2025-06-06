@@ -1,27 +1,87 @@
-# FreelancerApp
+<div align="center">
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
+# 💼 FreelanceHub
 
-## Development server
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,3,12&height=200&section=header&text=FreelanceHub&fontColor=fff&fontSize=70&animation=fadeIn&fontAlignY=38" width="100%" />
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+### Deine zentrale Schaltzentrale für Projekte, Zeiten, Kunden & Rechnungen
 
-## Code scaffolding
+[![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)](#)
+[![Angular](https://img.shields.io/badge/Angular-17-DD0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.io/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)](#)
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+</div>
 
-## Build
+---
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## ✨ Projektidee
 
-## Running unit tests
+FreelanceHub entstand aus dem echten Bedarf heraus: Als Freelancer wollte ich **alle Projektinfos auf einen Blick**, ohne Excel oder Tools wie Toggl, Trello und Co. kombinieren zu müssen.  
+**Ein Tool – alles drin:** Zeiterfassung, Rechnungen, Projektstatus & Kundenverwaltung.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+---
 
-## Running end-to-end tests
+## 🧩 Features
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+| 💰 Umsatz-Tracking | 🕒 Zeiterfassung | 📈 Projektfortschritt |
+|-------------------|------------------|------------------------|
+| Übersicht über Monatsumsatz & offene Beträge | Timer für aktive Projekte | Fortschrittsanzeige & Budgetauswertung |
 
-## Further help
+| 📋 Kundenverwaltung | 🧾 Rechnungen erstellen | 🎯 Dashboard |
+|----------------------|-------------------------|---------------|
+| Kontaktdaten, Umsatz & Historie | Rechtskonforme PDF-Rechnungen direkt im Tool | Alle KPIs übersichtlich an einem Ort |
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Angular 17
+- **Styling:** Tailwind CSS (Dark Mode ready)
+- **Build Tools:** Angular CLI
+- **PDF-Erzeugung:** Browser-basiert
+- **State-Management:** Services & Reactive Forms
+
+---
+
+## 🚀 Getting Started
+
+### Voraussetzungen
+
+- Node.js v16+
+- Angular CLI
+
+### Lokale Installation
+
+bash
+# Projekt klonen
+git clone https://github.com/dein-user/freelancehub.git
+
+# Verzeichnis wechseln
+cd freelancehub
+
+# Abhängigkeiten installieren
+npm install
+
+# Dev Server starten
+ng serve
+➡ Die App läuft dann unter http://localhost:4200/
+
+📅 Roadmap (geplant)
+ Authentifizierung (Login/Register)
+
+ Mobile-Optimierung (responsive Layouts)
+
+ Exportfunktion: CSV, JSON
+
+ Client-Dashboard: Kundenansicht teilen
+
+ Kalenderansicht für Deadlines
+
+👨‍💻 Über mich
+Ich bin Marcel – leidenschaftlicher Frontend-Entwickler mit Fokus auf Angular, TailwindCSS und moderner UI/UX.
+FreelanceHub ist mein persönliches All-in-One-Tool für den Projektalltag – clean, schnell & effektiv.
+
+📧 marcel.menke1981@gmail.com
+🌐 LinkedIn • GitHub
+
+<div align="center"> <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=2,3,12&height=100&section=footer" width="100%" /> <strong>FreelanceHub</strong> – Entwickelt mit ❤️ von <a href="https://github.com/Bi7hop">Marcel Menke</a> </div> 
