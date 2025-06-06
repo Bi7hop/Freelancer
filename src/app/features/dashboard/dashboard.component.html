@@ -1,1 +1,171 @@
-<p>dashboard works!</p>
+<!-- Dashboard Header -->
+<div class="mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Dashboard</h1>
+      <p class="text-gray-400">{{ currentDate() }} • Willkommen zurück!</p>
+    </div>
+    <button class="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white transition-colors self-start">
+      + Neues Projekt
+    </button>
+  </div>
+</div>
+
+<!-- KPI Cards mit Signals -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+  <!-- Monatsumsatz -->
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:bg-gray-800 transition-colors">
+    <div class="flex items-center justify-between mb-4">
+      <div class="p-3 bg-green-500/10 rounded-lg">
+        <span class="text-2xl">💰</span>
+      </div>
+      <span class="text-green-400 text-sm">↗ +12%</span>
+    </div>
+    <h3 class="text-2xl font-bold text-white mb-1">€{{ monthlyRevenue() | number:'1.0-0' }}</h3>
+    <p class="text-gray-400 text-sm">Monatsumsatz</p>
+  </div>
+
+  <!-- Aktive Projekte -->
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:bg-gray-800 transition-colors">
+    <div class="flex items-center justify-between mb-4">
+      <div class="p-3 bg-blue-500/10 rounded-lg">
+        <span class="text-2xl">📁</span>
+      </div>
+      <span class="text-blue-400 text-sm">{{ activeProjects().length }}</span>
+    </div>
+    <h3 class="text-2xl font-bold text-white mb-1">{{ activeProjects().length }}</h3>
+    <p class="text-gray-400 text-sm">Aktive Projekte</p>
+  </div>
+
+  <!-- Gearbeitete Stunden -->
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:bg-gray-800 transition-colors">
+    <div class="flex items-center justify-between mb-4">
+      <div class="p-3 bg-purple-500/10 rounded-lg">
+        <span class="text-2xl">⏱️</span>
+      </div>
+      <span class="text-gray-500 text-xs">Diese Woche</span>
+    </div>
+    <h3 class="text-2xl font-bold text-white mb-1">{{ weeklyHours() | number:'1.1-1' }}h</h3>
+    <p class="text-gray-400 text-sm">Gearbeitete Zeit</p>
+  </div>
+
+  <!-- Offene Rechnungen -->
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:bg-gray-800 transition-colors">
+    <div class="flex items-center justify-between mb-4">
+      <div class="p-3 bg-yellow-500/10 rounded-lg">
+        <span class="text-2xl">📄</span>
+      </div>
+      <span class="text-yellow-400 text-sm">{{ openInvoices() }} offen</span>
+    </div>
+    <h3 class="text-2xl font-bold text-white mb-1">€{{ openInvoicesAmount() | number:'1.0-0' }}</h3>
+    <p class="text-gray-400 text-sm">Ausstehend</p>
+  </div>
+</div>
+
+<!-- Computed Stats - Timer-Widget statt Live Updates -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+  <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+    <h3 class="text-lg font-semibold text-white mb-2">Gesamt-Budget</h3>
+    <p class="text-3xl font-bold text-emerald-400">€{{ totalBudget() | number:'1.0-0' }}</p>
+    <p class="text-sm text-gray-400 mt-1">Aktive Projekte</p>
+  </div>
+  
+  <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+    <h3 class="text-lg font-semibold text-white mb-2">Ø Fortschritt</h3>
+    <p class="text-3xl font-bold text-blue-400">{{ averageProgress() }}%</p>
+    <p class="text-sm text-gray-400 mt-1">Durchschnitt</p>
+  </div>
+  
+  <!-- Timer Widget -->
+  <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+    @if (timerService.timerIsRunning()) {
+      <div class="text-center">
+        <h3 class="text-lg font-semibold text-white mb-2">⏱️ Timer läuft</h3>
+        <p class="text-3xl font-mono font-bold text-green-400 mb-2">{{ timerService.formattedTime() }}</p>
+        <p class="text-sm text-gray-400 mb-3">{{ getActiveProjectName() }}</p>
+        <div class="flex gap-2 justify-center">
+          <button 
+            (click)="stopTimer()"
+            class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm text-white transition-colors"
+          >
+            ⏹️ Stop
+          </button>
+          <button 
+            (click)="cancelTimer()"
+            class="bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-sm text-white transition-colors"
+          >
+            ❌ Abbruch
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="text-center">
+        <h3 class="text-lg font-semibold text-white mb-2">Timer bereit</h3>
+        <p class="text-3xl font-mono font-bold text-gray-400 mb-2">00:00:00</p>
+        <p class="text-sm text-gray-400">Wähle ein Projekt zum Starten</p>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Projekte Übersicht mit Signals -->
+<div class="bg-gray-900 border border-gray-800 rounded-xl">
+  <div class="p-6 border-b border-gray-800">
+    <h2 class="text-xl font-semibold text-white">Aktive Projekte</h2>
+  </div>
+  
+  <div class="p-6">
+    <div class="space-y-4">
+      @for (project of activeProjects(); track project.id) {
+        <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-4 hover:bg-gray-800 transition-colors">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-white">{{ project.name }}</h3>
+            <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs">
+              Aktiv
+            </span>
+          </div>
+          
+          <p class="text-gray-400 text-sm mb-3">{{ project.client }}</p>
+          
+          <div class="flex items-center justify-between text-sm mb-3">
+            <span class="text-gray-400">{{ timerService.getProjectTotalHours(project.id)() }}h • €{{ project.budget | number:'1.0-0' }}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-white font-medium">{{ project.progress }}% fertig</span>
+              
+              <!-- Timer Controls -->
+              @if (timerService.timerIsRunning() && timerService.activeProjectId() === project.id) {
+                <span class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs border border-green-500/30 flex items-center gap-1">
+                  ⏱️ {{ timerService.formattedTime() }}
+                </span>
+              } @else if (!timerService.timerIsRunning()) {
+                <button 
+                  (click)="startProjectTimer(project.id, project.name)"
+                  class="bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-xs text-white transition-colors"
+                >
+                  ▶️ Start
+                </button>
+              } @else {
+                <span class="text-xs text-gray-500">Timer aktiv</span>
+              }
+            </div>
+          </div>
+          
+          <!-- Progress Bar -->
+          <div class="w-full bg-gray-700 rounded-full h-2">
+            <div 
+              class="bg-blue-500 h-2 rounded-full transition-all duration-500"
+              [style.width.%]="project.progress">
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="text-center py-8">
+          <p class="text-gray-400">Noch keine aktiven Projekte</p>
+          <button class="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white transition-colors">
+            Erstes Projekt erstellen
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>
