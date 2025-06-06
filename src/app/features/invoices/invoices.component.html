@@ -1,0 +1,638 @@
+<!-- Invoices Header -->
+<div class="mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Rechnungen</h1>
+      <p class="text-gray-400">Erstelle und verwalte deine Rechnungen rechtssicher</p>
+    </div>
+    <button 
+      (click)="openCreateInvoiceModal()"
+      class="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white transition-colors self-start"
+    >
+      + Neue Rechnung
+    </button>
+  </div>
+</div>
+
+<!-- Invoice Stats mit echten Daten -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-6">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-2xl">💰</span>
+      <span class="text-green-400 text-sm">{{ invoiceService.paidInvoices().length }}</span>
+    </div>
+    <h3 class="text-xl sm:text-2xl font-bold text-white mb-1">{{ formatCurrency(invoiceService.totalRevenue()) }}</h3>
+    <p class="text-gray-400 text-sm">Bezahlt</p>
+  </div>
+
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-6">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-2xl">⏳</span>
+      <span class="text-blue-400 text-sm">{{ invoiceService.sentInvoices().length }}</span>
+    </div>
+    <h3 class="text-xl sm:text-2xl font-bold text-white mb-1">{{ formatCurrency(invoiceService.outstandingAmount()) }}</h3>
+    <p class="text-gray-400 text-sm">Ausstehend</p>
+  </div>
+
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-6">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-2xl">🚨</span>
+      <span class="text-red-400 text-sm">{{ invoiceService.overdueInvoices().length }}</span>
+    </div>
+    <h3 class="text-xl sm:text-2xl font-bold text-white mb-1">{{ formatCurrency(invoiceService.overdueAmount()) }}</h3>
+    <p class="text-gray-400 text-sm">Überfällig</p>
+  </div>
+
+  <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-6">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-2xl">📊</span>
+      <span class="text-purple-400 text-sm">{{ invoiceService.allInvoices().length }}</span>
+    </div>
+    <h3 class="text-xl sm:text-2xl font-bold text-white mb-1">{{ invoiceService.allInvoices().length }}</h3>
+    <p class="text-gray-400 text-sm">Gesamt</p>
+  </div>
+</div>
+
+<!-- Filter Buttons -->
+<div class="flex flex-wrap gap-2 mb-6">
+  <button 
+    (click)="setFilter('all')"
+    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    [class]="selectedFilter() === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+  >
+    Alle ({{ invoiceService.allInvoices().length }})
+  </button>
+  <button 
+    (click)="setFilter('draft')"
+    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    [class]="selectedFilter() === 'draft' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+  >
+    Entwürfe ({{ invoiceService.draftInvoices().length }})
+  </button>
+  <button 
+    (click)="setFilter('sent')"
+    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    [class]="selectedFilter() === 'sent' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+  >
+    Versendet ({{ invoiceService.sentInvoices().length }})
+  </button>
+  <button 
+    (click)="setFilter('paid')"
+    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    [class]="selectedFilter() === 'paid' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+  >
+    Bezahlt ({{ invoiceService.paidInvoices().length }})
+  </button>
+  <button 
+    (click)="setFilter('overdue')"
+    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    [class]="selectedFilter() === 'overdue' ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+  >
+    Überfällig ({{ invoiceService.overdueInvoices().length }})
+  </button>
+</div>
+
+<!-- Invoices List -->
+<div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-gray-800 bg-gray-800/50">
+          <th class="text-left p-4 text-gray-400 font-medium">Rechnung</th>
+          <th class="text-left p-4 text-gray-400 font-medium">Kunde</th>
+          <th class="text-left p-4 text-gray-400 font-medium">Datum</th>
+          <th class="text-left p-4 text-gray-400 font-medium">Fällig</th>
+          <th class="text-right p-4 text-gray-400 font-medium">Betrag</th>
+          <th class="text-left p-4 text-gray-400 font-medium">Status</th>
+          <th class="text-center p-4 text-gray-400 font-medium">Aktionen</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (invoice of filteredInvoices(); track invoice.id) {
+          <tr class="border-b border-gray-800 hover:bg-gray-800/30 transition-colors">
+            <td class="p-4">
+              <div>
+                <span class="font-mono text-white font-medium">{{ invoice.invoiceNumber }}</span>
+                <p class="text-sm text-gray-400">{{ invoice.items.length }} Position(en)</p>
+              </div>
+            </td>
+            <td class="p-4">
+              <span class="text-gray-300">{{ getClientName(invoice.clientId) }}</span>
+            </td>
+            <td class="p-4">
+              <span class="text-gray-400">{{ formatDate(invoice.invoiceDate) }}</span>
+            </td>
+            <td class="p-4">
+              <span 
+                class="text-sm"
+                [class]="invoice.status === 'overdue' ? 'text-red-400' : 'text-gray-400'"
+              >
+                {{ formatDate(invoice.dueDate) }}
+              </span>
+            </td>
+            <td class="p-4 text-right">
+              <span class="text-white font-semibold">{{ formatCurrency(invoice.total) }}</span>
+            </td>
+            <td class="p-4">
+              <span 
+                class="px-3 py-1 rounded-full text-xs font-medium"
+                [ngClass]="getStatusClass(invoice.status)"
+              >
+                {{ getStatusLabel(invoice.status) }}
+              </span>
+            </td>
+            <td class="p-4">
+              <div class="flex items-center justify-center gap-2">
+                <button 
+                  (click)="openViewInvoiceModal(invoice)"
+                  class="p-2 text-gray-400 hover:text-blue-400 transition-colors" 
+                  title="Ansehen"
+                >
+                  👁️
+                </button>
+                
+                @if (invoice.status === 'draft') {
+                  <button 
+                    (click)="openEditInvoiceModal(invoice)"
+                    class="p-2 text-gray-400 hover:text-yellow-400 transition-colors" 
+                    title="Bearbeiten"
+                  >
+                    ✏️
+                  </button>
+                  <button 
+                    (click)="sendInvoice(invoice.id)"
+                    class="p-2 text-gray-400 hover:text-green-400 transition-colors" 
+                    title="Senden"
+                  >
+                    📤
+                  </button>
+                }
+                
+                @if (invoice.status === 'sent') {
+                  <button 
+                    (click)="markInvoiceAsPaid(invoice.id)"
+                    class="p-2 text-gray-400 hover:text-green-400 transition-colors" 
+                    title="Als bezahlt markieren"
+                  >
+                    💰
+                  </button>
+                }
+                
+                <button 
+                  class="p-2 text-gray-400 hover:text-purple-400 transition-colors" 
+                  title="PDF herunterladen"
+                >
+                  📄
+                </button>
+                
+                @if (invoice.status === 'draft') {
+                  <button 
+                    (click)="deleteInvoice(invoice.id)"
+                    class="p-2 text-gray-400 hover:text-red-400 transition-colors" 
+                    title="Löschen"
+                  >
+                    🗑️
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="p-12 text-center">
+              <div class="text-gray-400">
+                <p class="mb-4 text-lg">
+                  @if (selectedFilter() === 'all') {
+                    Noch keine Rechnungen vorhanden
+                  } @else {
+                    Keine Rechnungen mit Status "{{ getStatusLabel(selectedFilter()) }}"
+                  }
+                </p>
+                <button 
+                  (click)="openCreateInvoiceModal()"
+                  class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-white transition-colors font-medium"
+                >
+                  Erste Rechnung erstellen
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal für Rechnung erstellen/bearbeiten/ansehen -->
+@if (showModal()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-white">
+            @if (modalMode() === 'create') {
+              Neue Rechnung erstellen
+            } @else if (modalMode() === 'edit') {
+              Rechnung bearbeiten
+            } @else {
+              Rechnung ansehen
+            }
+          </h2>
+          <button 
+            (click)="closeModal()"
+            class="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+      
+      <div class="p-6">
+        @if (modalMode() === 'create') {
+          <!-- Kunde auswählen für neue Rechnung -->
+          <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-white mb-4">Kunde auswählen</h3>
+            @for (client of clients(); track client.id) {
+              <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-4 hover:bg-gray-800 transition-colors cursor-pointer"
+                   (click)="createInvoice(client.id)">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="font-semibold text-white">{{ client.name }}</h4>
+                    <p class="text-sm text-gray-400">{{ client.email }}</p>
+                    <p class="text-xs text-gray-500">
+                      {{ client.address.street }} {{ client.address.houseNumber }}, {{ client.address.postalCode }} {{ client.address.city }}
+                    </p>
+                  </div>
+                  <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white transition-colors">
+                    Auswählen
+                  </button>
+                </div>
+              </div>
+            } @empty {
+              <div class="text-center py-8">
+                <p class="text-gray-400 mb-4">Noch keine Kunden vorhanden</p>
+                <button class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition-colors">
+                  Ersten Kunden anlegen
+                </button>
+              </div>
+            }
+          </div>
+        } @else if (selectedInvoice()) {
+          <!-- Rechnungsdetails anzeigen/bearbeiten -->
+          <div class="space-y-6">
+            <!-- Grunddaten -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 class="text-lg font-semibold text-white mb-3">Rechnungsdaten</h3>
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-sm text-gray-400 mb-1">Rechnungsnummer</label>
+                    <div class="font-mono text-white bg-gray-800 border border-gray-700 rounded-lg px-4 py-2">
+                      {{ selectedInvoice()!.invoiceNumber }}
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-400 mb-1">Status</label>
+                    <span 
+                      class="px-3 py-1 rounded-full text-xs font-medium"
+                      [ngClass]="getStatusClass(selectedInvoice()!.status)"
+                    >
+                      {{ getStatusLabel(selectedInvoice()!.status) }}
+                    </span>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-400 mb-1">Rechnungsdatum</label>
+                    <div class="text-white bg-gray-800 border border-gray-700 rounded-lg px-4 py-2">
+                      {{ formatDate(selectedInvoice()!.invoiceDate) }}
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-400 mb-1">Fälligkeitsdatum</label>
+                    <div class="text-white bg-gray-800 border border-gray-700 rounded-lg px-4 py-2">
+                      {{ formatDate(selectedInvoice()!.dueDate) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 class="text-lg font-semibold text-white mb-3">Kunde</h3>
+                <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                  <h4 class="font-semibold text-white">{{ getClientName(selectedInvoice()!.clientId) }}</h4>
+                  <p class="text-sm text-gray-400 mt-1">
+                    Rechnungsadresse und weitere Details...
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rechnungspositionen -->
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-white">Positionen</h3>
+                @if (modalMode() === 'edit' && selectedInvoice()!.status === 'draft') {
+                  <button 
+                    (click)="openAddItemModal()"
+                    class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition-colors"
+                  >
+                    + Position hinzufügen
+                  </button>
+                }
+              </div>
+              
+              @if (selectedInvoice()!.items.length > 0) {
+                <div class="space-y-3">
+                  @for (item of selectedInvoice()!.items; track item.id) {
+                    <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                      <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+                        <div class="md:col-span-2">
+                          <h4 class="font-medium text-white">{{ item.description }}</h4>
+                          @if (item.discount && item.discount > 0) {
+                            <p class="text-xs text-yellow-400">{{ item.discount }}% Rabatt</p>
+                          }
+                        </div>
+                        <div class="text-center">
+                          <span class="text-gray-300">{{ item.quantity }} {{ item.unit }}</span>
+                        </div>
+                        <div class="text-center">
+                          <span class="text-gray-300">{{ formatCurrency(item.unitPrice) }}</span>
+                        </div>
+                        <div class="text-center">
+                          <span class="text-gray-300">{{ item.taxRate }}%</span>
+                        </div>
+                        <div class="text-right">
+                          <span class="text-white font-semibold">{{ formatCurrency(item.grossAmount) }}</span>
+                          <p class="text-xs text-gray-400">inkl. MwSt.</p>
+                        </div>
+                      </div>
+                      
+                      @if (modalMode() === 'edit' && selectedInvoice()!.status === 'draft') {
+                        <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-600">
+                          <button 
+                            (click)="openEditItemModal(item)"
+                            class="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+                            title="Bearbeiten"
+                          >
+                            ✏️
+                          </button>
+                          <button 
+                            (click)="removeInvoiceItem(item.id)"
+                            class="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                            title="Entfernen"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="text-center py-8 bg-gray-800/30 border border-gray-700 rounded-lg">
+                  <p class="text-gray-400 mb-4">Noch keine Positionen hinzugefügt</p>
+                  @if (modalMode() === 'edit' && selectedInvoice()!.status === 'draft') {
+                    <button 
+                      (click)="openAddItemModal()"
+                      class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white transition-colors"
+                    >
+                      Erste Position hinzufügen
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Rechnungssumme -->
+            <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+              <h3 class="text-lg font-semibold text-white mb-4">Rechnungssumme</h3>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Zwischensumme (netto):</span>
+                  <span class="text-white">{{ formatCurrency(selectedInvoice()!.subtotal) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">MwSt. ({{ selectedInvoice()!.taxRate }}%):</span>
+                  <span class="text-white">{{ formatCurrency(selectedInvoice()!.taxAmount) }}</span>
+                </div>
+                <div class="border-t border-gray-600 pt-2 mt-2">
+                  <div class="flex justify-between text-lg font-bold">
+                    <span class="text-white">Gesamtsumme:</span>
+                    <span class="text-white">{{ formatCurrency(selectedInvoice()!.total) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Aktionen -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-800">
+              <button 
+                (click)="closeModal()"
+                class="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+              >
+                Schließen
+              </button>
+              
+              @if (selectedInvoice()!.status === 'draft') {
+                <button 
+                  (click)="sendInvoice(selectedInvoice()!.id); closeModal()"
+                  class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition-colors"
+                >
+                  📤 Senden
+                </button>
+              }
+              
+              @if (selectedInvoice()!.status === 'sent') {
+                <button 
+                  (click)="markInvoiceAsPaid(selectedInvoice()!.id); closeModal()"
+                  class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition-colors"
+                >
+                  💰 Als bezahlt markieren
+                </button>
+              }
+              
+              <button class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white transition-colors">
+                📄 PDF herunterladen
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal für Position hinzufügen/bearbeiten -->
+@if (showItemModal()) {
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-white">
+            {{ editingItem() ? 'Position bearbeiten' : 'Position hinzufügen' }}
+          </h2>
+          <button 
+            (click)="closeItemModal()"
+            class="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+      
+      <div class="p-6">
+        <form (ngSubmit)="saveInvoiceItem()" #itemForm="ngForm">
+          <!-- Häufige Services -->
+          @if (!editingItem()) {
+            <div class="mb-6">
+              <h3 class="text-sm font-medium text-gray-400 mb-3">Häufige Dienstleistungen</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                @for (service of getCommonServices(); track service.name) {
+                  <button 
+                    type="button"
+                    (click)="selectCommonService(service)"
+                    class="text-left p-3 bg-gray-800/50 hover:bg-gray-800 border border-gray-700 rounded-lg transition-colors"
+                  >
+                    <div class="font-medium text-white text-sm">{{ service.name }}</div>
+                    <div class="text-xs text-gray-400">{{ formatCurrency(service.defaultPrice) }}/{{ service.unit }}</div>
+                  </button>
+                }
+              </div>
+              <div class="border-t border-gray-700 mt-4 pt-4">
+                <h4 class="text-sm font-medium text-gray-400 mb-3">Oder manuelle Eingabe:</h4>
+              </div>
+            </div>
+          }
+
+          <div class="space-y-4">
+            <!-- Beschreibung -->
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-2">Beschreibung *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="currentItemData().description"
+                name="description"
+                required
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                placeholder="z.B. Website Entwicklung"
+              >
+            </div>
+
+            <!-- Menge und Einheit -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Menge *</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="currentItemData().quantity"
+                  name="quantity"
+                  required
+                  min="0"
+                  step="0.1"
+                  class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                >
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Einheit *</label>
+                <select 
+                  [(ngModel)]="currentItemData().unit"
+                  name="unit"
+                  required
+                  class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                >
+                  <option value="Stunden">Stunden</option>
+                  <option value="Tage">Tage</option>
+                  <option value="Stück">Stück</option>
+                  <option value="Pauschal">Pauschal</option>
+                  <option value="Seiten">Seiten</option>
+                  <option value="Monate">Monate</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Einzelpreis und Rabatt -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Einzelpreis (netto) *</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="currentItemData().unitPrice"
+                  name="unitPrice"
+                  required
+                  min="0"
+                  step="0.01"
+                  class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                  placeholder="0.00"
+                >
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Rabatt (%)</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="currentItemData().discount"
+                  name="discount"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                  placeholder="0"
+                >
+              </div>
+            </div>
+
+            <!-- MwSt-Satz -->
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-2">MwSt-Satz *</label>
+              <select 
+                [(ngModel)]="currentItemData().taxRate"
+                name="taxRate"
+                required
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="0">0% (steuerbefreit)</option>
+                <option value="7">7% (ermäßigter Satz)</option>
+                <option value="19">19% (Regelsteuersatz)</option>
+              </select>
+            </div>
+
+            <!-- Vorschau -->
+            <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-gray-400 mb-3">Vorschau</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Netto-Betrag:</span>
+                  <span class="text-white">{{ formatCurrency(getItemPreview().netAmount) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">MwSt ({{ currentItemData().taxRate }}%):</span>
+                  <span class="text-white">{{ formatCurrency(getItemPreview().taxAmount) }}</span>
+                </div>
+                <div class="flex justify-between font-semibold border-t border-gray-600 pt-2">
+                  <span class="text-white">Brutto-Betrag:</span>
+                  <span class="text-white">{{ formatCurrency(getItemPreview().grossAmount) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Aktionen -->
+          <div class="flex justify-end gap-3 mt-6">
+            <button 
+              type="button"
+              (click)="closeItemModal()"
+              class="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+            >
+              Abbrechen
+            </button>
+            <button 
+              type="submit"
+              [disabled]="!itemForm.form.valid"
+              class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-white transition-colors"
+            >
+              {{ editingItem() ? 'Speichern' : 'Hinzufügen' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
