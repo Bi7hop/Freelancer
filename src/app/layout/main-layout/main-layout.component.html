@@ -1,49 +1,141 @@
-<div class="min-h-screen bg-black text-white">
-  <!-- Sidebar -->
-  <div class="fixed inset-y-0 left-0 w-64 bg-gray-900 border-r border-gray-800">
-    <!-- Logo -->
-    <div class="flex items-center justify-center h-16 border-b border-gray-800">
-      <h1 class="text-xl font-bold text-white">⚡ FreelanceHub</h1>
+<div class="min-h-screen bg-black text-white pb-20">
+  <!-- Top Header -->
+  <div class="sticky top-0 z-40 bg-gray-900/95 backdrop-blur-xl border-b border-gray-800">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-sm">⚡</span>
+          </div>
+          <h1 class="text-xl font-bold text-white">FreelanceHub</h1>
+        </div>
+        
+        <!-- Header Actions -->
+        <div class="flex items-center space-x-3">
+          <button class="p-2 text-gray-400 hover:text-white transition-colors relative">
+            🔔
+            <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+          </button>
+          <button class="p-2 text-gray-400 hover:text-white transition-colors">
+            ⚙️
+          </button>
+        </div>
+      </div>
     </div>
-    
-    <!-- Navigation -->
-    <nav class="mt-8 px-4">
-      <a 
-        routerLink="/dashboard" 
-        routerLinkActive="bg-gray-800 text-white"
-        class="flex items-center px-4 py-3 mb-2 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
-      >
-        🏠 Dashboard
-      </a>
-      
-      <a 
-        routerLink="/projects" 
-        routerLinkActive="bg-gray-800 text-white"
-        class="flex items-center px-4 py-3 mb-2 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
-      >
-        📁 Projekte
-      </a>
-      
-      <a 
-        routerLink="/clients" 
-        routerLinkActive="bg-gray-800 text-white"
-        class="flex items-center px-4 py-3 mb-2 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
-      >
-        👥 Kunden
-      </a>
-      
-      <a 
-        routerLink="/invoices" 
-        routerLinkActive="bg-gray-800 text-white"
-        class="flex items-center px-4 py-3 mb-2 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
-      >
-        📄 Rechnungen
-      </a>
-    </nav>
   </div>
   
   <!-- Main Content -->
-  <div class="ml-64 min-h-screen bg-gray-950 p-8">
-    <router-outlet></router-outlet>
+  <div class="min-h-screen">
+    <div class="max-w-7xl mx-auto px-6 py-6">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+  
+  <!-- Bottom Navigation -->
+  <div class="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-xl border-t border-gray-800">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid grid-cols-4 gap-1">
+        <!-- Dashboard -->
+        <a 
+          routerLink="/dashboard" 
+          routerLinkActive="active"
+          #dashboardLink="routerLinkActive"
+          class="flex flex-col items-center py-3 px-2 transition-all duration-200"
+          [class]="dashboardLink.isActive ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'"
+        >
+          <div 
+            class="w-6 h-6 mb-1 flex items-center justify-center"
+            [class]="dashboardLink.isActive ? 'scale-110' : ''"
+          >
+            🏠
+          </div>
+          <span class="text-xs font-medium">Dashboard</span>
+          @if (dashboardLink.isActive) {
+            <div class="w-6 h-0.5 bg-blue-400 rounded-full mt-1"></div>
+          }
+        </a>
+
+        <!-- Projects -->
+        <a 
+          routerLink="/projects" 
+          routerLinkActive="active"
+          #projectsLink="routerLinkActive"
+          class="flex flex-col items-center py-3 px-2 transition-all duration-200"
+          [class]="projectsLink.isActive ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'"
+        >
+          <div 
+            class="w-6 h-6 mb-1 flex items-center justify-center"
+            [class]="projectsLink.isActive ? 'scale-110' : ''"
+          >
+            📁
+          </div>
+          <span class="text-xs font-medium">Projekte</span>
+          @if (projectsLink.isActive) {
+            <div class="w-6 h-0.5 bg-blue-400 rounded-full mt-1"></div>
+          }
+        </a>
+
+        <!-- Clients -->
+        <a 
+          routerLink="/clients" 
+          routerLinkActive="active"
+          #clientsLink="routerLinkActive"
+          class="flex flex-col items-center py-3 px-2 transition-all duration-200"
+          [class]="clientsLink.isActive ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'"
+        >
+          <div 
+            class="w-6 h-6 mb-1 flex items-center justify-center"
+            [class]="clientsLink.isActive ? 'scale-110' : ''"
+          >
+            👥
+          </div>
+          <span class="text-xs font-medium">Kunden</span>
+          @if (clientsLink.isActive) {
+            <div class="w-6 h-0.5 bg-blue-400 rounded-full mt-1"></div>
+          }
+        </a>
+
+        <!-- Invoices -->
+        <a 
+          routerLink="/invoices" 
+          routerLinkActive="active"
+          #invoicesLink="routerLinkActive"
+          class="flex flex-col items-center py-3 px-2 transition-all duration-200"
+          [class]="invoicesLink.isActive ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'"
+        >
+          <div 
+            class="w-6 h-6 mb-1 flex items-center justify-center"
+            [class]="invoicesLink.isActive ? 'scale-110' : ''"
+          >
+            📄
+          </div>
+          <span class="text-xs font-medium">Rechnungen</span>
+          @if (invoicesLink.isActive) {
+            <div class="w-6 h-0.5 bg-blue-400 rounded-full mt-1"></div>
+          }
+        </a>
+
+        <!-- Settings -->
+        <a 
+          routerLink="/settings" 
+          routerLinkActive="active"
+          #settingsLink="routerLinkActive"
+          class="flex flex-col items-center py-3 px-2 transition-all duration-200"
+          [class]="settingsLink.isActive ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'"
+        >
+          <div 
+            class="w-6 h-6 mb-1 flex items-center justify-center"
+            [class]="settingsLink.isActive ? 'scale-110' : ''"
+          >
+            ⚙️
+          </div>
+          <span class="text-xs font-medium">Settings</span>
+          @if (settingsLink.isActive) {
+            <div class="w-6 h-0.5 bg-blue-400 rounded-full mt-1"></div>
+          }
+        </a>
+      </div>
+    </div>
   </div>
 </div>
